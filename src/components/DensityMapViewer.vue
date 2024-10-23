@@ -40,6 +40,11 @@ export default {
     }
   },
   methods: {
+    /**
+     * The createDensityMapWithNewParams function updates and renders a density map
+     * based on new parameters, fetching and handling both primary and multiscale
+     * datasets as needed.
+     */
     createDensityMapWithNewParams() {
       if(this.params.dataset === undefined) {
         console.log('is empty');
@@ -86,6 +91,11 @@ export default {
       select('#mapBrushLayer').attr('width', this.params.width).attr('height', this.params.height); 
       select('#lensRecords').style('top', `${Number(this.params.height)+200}px`);
     },
+    /**
+     * The createRegionLensBrush function creates an SVG brush for selecting
+     * a region on a map, storing the selection details in this.tableData and
+     * updating the density map upon selection or deselection.
+     */
     createRegionLensBrush() {
       let mapBrushLayer = select('.el-main').append('svg')
                         .attr('class', 'brush')
@@ -115,6 +125,13 @@ export default {
       mapBrushLayer.append('g')
         .call(_regionBrush);
     },
+    /**
+     * 
+     * @param data Rendering a density map by enhancing the provided data
+     * based on any active region lens selection, updating the canvas with
+     * the resulting image data and optionally drawing a colorbar axis if specified.
+     * @param params 
+     */
     renderDensityMap(data: number[][], params: any) {
       let regionLensInfo = this.tableData.find((i:any)=>i.type=='Region lens'), regionLens:any;
       if (regionLensInfo) {
@@ -146,12 +163,25 @@ export default {
         })
         .catch(e => { console.log(e.message); })
     },
+    /**
+     * 
+     * @param data The renderDensityMapAndColorbar function renders a density map
+     * and generates a colorbar using the provided data and parameters, 
+     * defaulting to this.params if none are specified.
+     * @param params 
+     */
     renderDensityMapAndColorbar(data: number[][], params?: object) {
       let tmpParams = params ? params : this.params;
 
       this.renderDensityMap(data, tmpParams);
       this.generateColorbar(data, tmpParams);
     },
+    /**
+     * 
+     * @param data Creating a colorbar based on the provided data and parameters, 
+     * adapting its design for either 2D or vertical color maps
+     * @param params 
+     */
     generateColorbar(data: number[][], params: any) {
       if(this.params.colormap === undefined) { return; }
 
@@ -249,6 +279,12 @@ export default {
         downloadLink.click();
       });
     },
+    /**
+     * Displaying the original density map by retrieving the base dataset from
+     * this.multiscaleData, setting specific parameters for rendering, 
+     * and then calling renderDensityMapAndColorbar to render the map and colorbar, 
+     * while resetting the zoom level.
+     */
     showOriginalDensityMap() {
       if (this.multiscaleData.get(0) === undefined) { return; }
 
@@ -322,6 +358,13 @@ export default {
       }
     }, 200)
   },
+  /**
+   * The watch property monitors changes to isLensMode; when it becomes true, 
+   * it enables the lens by calling createRegionLensBrush. If it turns false, 
+   * the function clears any existing brushes from the colorbar and map, 
+   * removes brush elements from the DOM, and resets related variables, 
+   * ensuring a clean state when the lens mode is disabled.
+   */
   watch: {
     isLensMode(newVal) {
       if(!this.multiscaleData.has(this.zoomLevel)) { return; }
